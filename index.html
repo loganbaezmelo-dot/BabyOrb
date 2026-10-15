@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>BabyOrb</title>
   <style>
     * {
@@ -13,62 +13,70 @@
       padding: 0;
     }
     body {
-      background: #11141c;
+      background: #0d1117;
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100vh;
-      padding: 16px;
+      min-height: 100dvh;
+      padding: 10px;
+      overflow-x: hidden;
+      touch-action: manipulation;
     }
     h1 {
-      font-size: 26px;
+      font-size: 22px;
       margin-bottom: 8px;
-      letter-spacing: 1px;
+      text-align: center;
     }
     #top-bar {
       display: flex;
-      gap: 20px;
-      background: #1e2433;
-      padding: 10px 24px;
+      justify-content: space-around;
+      width: 100%;
+      max-width: 450px;
+      background: #161b22;
+      padding: 8px 12px;
       border-radius: 12px;
+      font-size: 13px;
       font-weight: 600;
-      font-size: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      margin-bottom: 8px;
+      border: 1px solid #30363d;
     }
     #room {
       position: relative;
-      width: 600px;
-      height: 380px;
-      background: linear-gradient(180deg, #2b354f 0%, #1a1e2d 75%, #141722 100%);
-      border: 3px solid #3c4866;
+      width: 100%;
+      max-width: 450px;
+      height: 48vh;
+      min-height: 280px;
+      background: radial-gradient(circle at 50% 30%, #1e2638, #0e121a);
+      border: 2px solid #30363d;
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      touch-action: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
     }
     #speech-bubble {
       position: absolute;
       background: #fff;
       color: #111;
-      padding: 6px 12px;
-      border-radius: 14px;
-      font-size: 13px;
+      padding: 5px 10px;
+      border-radius: 12px;
+      font-size: 12px;
       font-weight: 700;
       pointer-events: none;
       display: none;
       white-space: nowrap;
-      z-index: 20;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      z-index: 25;
+      transform: translate(-50%, -100%);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
     #speech-bubble::after {
       content: '';
       position: absolute;
-      bottom: -6px;
+      bottom: -5px;
       left: 50%;
       transform: translateX(-50%);
-      border-width: 6px 6px 0;
+      border-width: 5px 5px 0;
       border-style: solid;
       border-color: #fff transparent;
       display: block;
@@ -78,128 +86,127 @@
       position: absolute;
       border-radius: 50%;
       background: radial-gradient(circle at 35% 35%, #ffd166, #f77f00);
-      box-shadow: 0 0 20px rgba(247, 127, 0, 0.4);
+      box-shadow: 0 0 20px rgba(247, 127, 0, 0.45);
       cursor: grab;
       touch-action: none;
-      transition: width 0.3s, height 0.3s;
       z-index: 10;
+      transition: width 0.25s, height 0.25s;
     }
     #orb:active {
       cursor: grabbing;
     }
     .face {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      inset: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 15%;
-      transition: transform 0.4s ease;
+      gap: 16%;
+      transition: transform 0.4s ease, opacity 0.3s;
     }
     .eye {
       background: #111;
       border-radius: 50%;
-      width: 14%;
-      height: 14%;
+      width: 15%;
+      height: 15%;
     }
     .orb-rioting .face {
       transform: rotateY(180deg);
       opacity: 0;
     }
-    #toy, #trash, #stash {
-      position: absolute;
-      display: none;
-      user-select: none;
-    }
     #toy {
-      width: 50px;
-      height: 50px;
-      font-size: 36px;
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      font-size: 32px;
       text-align: center;
-      line-height: 50px;
+      line-height: 44px;
       cursor: grab;
+      display: none;
       z-index: 5;
+      touch-action: none;
     }
     #trash {
-      bottom: 12px;
-      right: 16px;
-      width: 60px;
-      height: 60px;
-      background: #2a3142;
-      border: 2px dashed #64748b;
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 50px;
+      height: 50px;
+      background: #21262d;
+      border: 2px dashed #484f58;
       border-radius: 12px;
-      font-size: 32px;
-      display: flex;
+      font-size: 24px;
+      display: none;
       align-items: center;
       justify-content: center;
       z-index: 4;
     }
     #stash {
+      position: absolute;
       bottom: 10px;
-      left: 16px;
-      display: flex;
-      gap: 10px;
-      font-size: 14px;
-      background: rgba(0,0,0,0.4);
-      padding: 6px 12px;
+      left: 10px;
+      display: none;
+      gap: 8px;
+      font-size: 12px;
+      background: rgba(0,0,0,0.6);
+      padding: 5px 10px;
       border-radius: 8px;
+      border: 1px solid #30363d;
+      z-index: 4;
     }
     #shop {
-      margin-top: 14px;
-      width: 600px;
+      width: 100%;
+      max-width: 450px;
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 10px;
     }
     .btn {
-      background: #252e42;
-      border: 1px solid #3c4866;
-      color: #fff;
-      padding: 10px 6px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
+      padding: 9px 4px;
       border-radius: 10px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       text-align: center;
-      transition: 0.15s;
+      transition: 0.1s ease;
     }
-    .btn:hover:not(:disabled) {
-      background: #34405c;
-      border-color: #ffd166;
+    .btn:active:not(:disabled) {
+      transform: scale(0.97);
+      background: #21262d;
     }
     .btn:disabled {
-      opacity: 0.4;
+      opacity: 0.35;
       cursor: not-allowed;
     }
     #logs {
-      margin-top: 10px;
-      width: 600px;
-      height: 48px;
-      background: #141824;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 13px;
-      color: #94a3b8;
-      overflow-y: auto;
-      text-align: center;
-    }
-    .dead-screen, .win-screen {
-      position: absolute;
-      top: 0;
-      left: 0;
+      margin-top: 8px;
       width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.85);
-      display: flex;
+      max-width: 450px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 12px;
+      color: #8b949e;
+      text-align: center;
+      min-height: 34px;
+    }
+    .overlay-screen {
+      position: absolute;
+      inset: 0;
+      background: rgba(13, 17, 23, 0.92);
+      display: none;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       z-index: 50;
-      font-size: 24px;
-      gap: 14px;
+      padding: 20px;
+      text-align: center;
+      gap: 12px;
     }
   </style>
 </head>
@@ -208,10 +215,10 @@
   <h1>BabyOrb 💀</h1>
 
   <div id="top-bar">
-    <div>🪙 Coins: <span id="coins-display">0</span></div>
-    <div>🎂 Age: <span id="age-display">0</span></div>
-    <div>🍼 Hunger: <span id="hunger-display">100</span>%</div>
-    <div>💧 Thirst: <span id="thirst-display">100</span>%</div>
+    <div>🪙 <span id="coins-display">0</span></div>
+    <div>🎂 Age <span id="age-display">0</span></div>
+    <div>🍼 <span id="hunger-display">100</span>%</div>
+    <div>💧 <span id="thirst-display">100</span>%</div>
   </div>
 
   <div id="room">
@@ -222,21 +229,22 @@
         <div class="eye"></div>
       </div>
     </div>
+
     <div id="toy">🧸</div>
     <div id="trash">🗑️</div>
     <div id="stash">
-      <span>🍎 Fruits: <b id="fruit-count">0</b></span>
-      <span>💧 Water: <b id="water-count">0</b></span>
+      <span>🍎 <b id="fruit-count">0</b></span>
+      <span>💧 <b id="water-count">0</b></span>
     </div>
 
-    <div id="game-over" class="dead-screen" style="display:none;">
-      <div>💀 Your orb passed away...</div>
-      <button class="btn" onclick="location.reload()">Restart</button>
+    <div id="game-over" class="overlay-screen">
+      <div style="font-size: 20px;">💀 Your orb passed away...</div>
+      <button class="btn" style="padding: 8px 18px;" onclick="location.reload()">Restart</button>
     </div>
 
-    <div id="win-screen" class="win-screen" style="display:none;">
-      <div>🎓 Age 4 reached! Your orb is fully grown and independent!</div>
-      <p style="font-size: 15px; color: #94a3b8;">It takes care of itself now. You beat the game 😭</p>
+    <div id="win-screen" class="overlay-screen">
+      <div style="font-size: 20px;">🎓 Age 4 reached!</div>
+      <p style="font-size: 14px; color: #8b949e;">Your orb is fully independent and can care for itself now. You beat the game 😭💀</p>
     </div>
   </div>
 
@@ -249,7 +257,7 @@
     <button class="btn" id="btn-feed-stash" onclick="feedFromStash()" disabled>🍽️ Feed Stash</button>
   </div>
 
-  <div id="logs">Pet your orb by rubbing your cursor or finger over it to get coins!</div>
+  <div id="logs">Pet your orb by rubbing your finger over it to get coins!</div>
 
   <script>
     const gameState = {
@@ -269,9 +277,9 @@
       waterPacks: 0,
       fruitsEatenTotal: 0,
       watersDrunkTotal: 0,
-      posX: 275,
-      posY: 165,
-      size: 50,
+      posX: 120,
+      posY: 120,
+      size: 55,
       vx: 1.5,
       vy: 1.2
     };
@@ -288,11 +296,18 @@
       logBox.innerText = msg;
     }
 
+    function initOrbPosition() {
+      const bounds = room.getBoundingClientRect();
+      gameState.posX = (bounds.width - gameState.size) / 2;
+      gameState.posY = (bounds.height - gameState.size) / 2;
+      applyOrbTransform();
+    }
+
     function updateUI() {
       document.getElementById('coins-display').innerText = gameState.coins;
       document.getElementById('age-display').innerText = gameState.age;
-      document.getElementById('hunger-display').innerText = Math.round(gameState.hunger);
-      document.getElementById('thirst-display').innerText = Math.round(gameState.thirst);
+      document.getElementById('hunger-display').innerText = Math.max(0, Math.round(gameState.hunger));
+      document.getElementById('thirst-display').innerText = Math.max(0, Math.round(gameState.thirst));
       document.getElementById('fruit-count').innerText = gameState.fruitPacks;
       document.getElementById('water-count').innerText = gameState.waterPacks;
 
@@ -332,8 +347,10 @@
       orb.style.top = gameState.posY + 'px';
     }
 
-    applyOrbTransform();
-    updateUI();
+    window.addEventListener('load', () => {
+      initOrbPosition();
+      updateUI();
+    });
 
     // Petting / Rubbing
     let lastPetX = 0;
@@ -342,12 +359,14 @@
 
     orb.addEventListener('pointermove', (e) => {
       if (isDragging) return;
-      const dist = Math.hypot(e.clientX - lastPetX, e.clientY - lastPetY);
-      petDistance += dist;
+      if (lastPetX !== 0 && lastPetY !== 0) {
+        const dist = Math.hypot(e.clientX - lastPetX, e.clientY - lastPetY);
+        petDistance += dist;
+      }
       lastPetX = e.clientX;
       lastPetY = e.clientY;
 
-      if (petDistance > 60) {
+      if (petDistance > 50) {
         petDistance = 0;
         let gain = 5;
         if (gameState.age === 1) gain = 3;
@@ -365,7 +384,12 @@
       }
     });
 
-    // Swiping / Moving Drag Orb
+    orb.addEventListener('pointerleave', () => {
+      lastPetX = 0;
+      lastPetY = 0;
+    });
+
+    // Pick up / Move mechanic
     let isDragging = false;
     let dragStart = { x: 0, y: 0 };
 
@@ -380,10 +404,10 @@
       if (!isDragging) return;
       isDragging = false;
       const moved = Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y);
-      if (moved > 40) {
+      if (moved > 30) {
         let gain = gameState.age === 1 ? 10 : 5;
         gameState.coins += gain;
-        log(`Picked up and tossed orb! +${gain} coins 🪙`);
+        log(`Moved orb! +${gain} coins 🪙`);
         updateUI();
       }
     });
@@ -400,7 +424,7 @@
       applyOrbTransform();
     });
 
-    // Shop functions
+    // Shop actions
     function buyMilk() {
       const price = gameState.age >= 2 ? 30 : 50;
       if (gameState.coins >= price) {
@@ -434,9 +458,9 @@
         gameState.rioting = false;
         orb.classList.remove('orb-rioting');
         toy.style.display = 'block';
-        toy.style.left = '450px';
-        toy.style.top = '250px';
-        log('Bought a toy! Orb stopped rioting and is thrilled! 🧸');
+        toy.style.left = '75%';
+        toy.style.top = '65%';
+        log('Bought a toy! Orb stopped rioting and is happy! 🧸');
         triggerHappy();
         updateUI();
       }
@@ -446,7 +470,7 @@
       if (gameState.coins >= 75) {
         gameState.coins -= 75;
         gameState.fruitPacks += 5;
-        log('Bought a 5-pack of fruits! 🍎');
+        log('Bought 5x fruits pack! 🍎');
         updateUI();
       }
     }
@@ -455,7 +479,7 @@
       if (gameState.coins >= 60) {
         gameState.coins -= 60;
         gameState.waterPacks += 5;
-        log('Bought a 5-pack of fresh water! 💧');
+        log('Bought 5x water pack! 💧');
         updateUI();
       }
     }
@@ -476,7 +500,7 @@
       }
       if (fed) {
         triggerHappy();
-        log('Manually fed orb from your stashed supplies!');
+        log('Manually fed orb from supplies!');
         checkGrowth();
         updateUI();
       }
@@ -505,27 +529,27 @@
 
     function levelUpToAge1() {
       gameState.age = 1;
-      gameState.size = 80;
+      gameState.size = 75;
       applyOrbTransform();
-      log('🎉 Orb reached Age 1! It started moving around and wants a toy!');
+      log('🎉 Orb reached Age 1! It moves now and wants a toy!');
       updateUI();
     }
 
     function levelUpToAge2() {
       gameState.age = 2;
-      gameState.size = 110;
+      gameState.size = 95;
       gameState.toyRotten = true;
       toy.innerText = '🤢';
       trash.style.display = 'flex';
       stash.style.display = 'flex';
       applyOrbTransform();
-      log('🎉 Orb reached Age 2! The toy got rotten and stinky! Throw it away in the trash!');
+      log('🎉 Orb reached Age 2! The toy got stinky rotten! Drag it to trash! 🗑️');
       updateUI();
     }
 
     function levelUpToAge3() {
       gameState.age = 3;
-      gameState.size = 140;
+      gameState.size = 120;
       applyOrbTransform();
       log('🎉 Orb reached Age 3! It learned how to talk!');
       updateUI();
@@ -537,13 +561,13 @@
 
     function levelUpToAge4() {
       gameState.age = 4;
-      gameState.size = 175;
+      gameState.size = 145;
       applyOrbTransform();
       document.getElementById('win-screen').style.display = 'flex';
       updateUI();
     }
 
-    // Toy drag to trash
+    // Drag rotten toy to trash
     let draggingToy = false;
     toy.addEventListener('pointerdown', (e) => {
       if (!gameState.toyRotten) return;
@@ -554,8 +578,8 @@
     window.addEventListener('pointermove', (e) => {
       if (!draggingToy) return;
       const b = room.getBoundingClientRect();
-      toy.style.left = (e.clientX - b.left - 25) + 'px';
-      toy.style.top = (e.clientY - b.top - 25) + 'px';
+      toy.style.left = (e.clientX - b.left - 22) + 'px';
+      toy.style.top = (e.clientY - b.top - 22) + 'px';
 
       const tRect = trash.getBoundingClientRect();
       if (e.clientX >= tRect.left && e.clientX <= tRect.right &&
@@ -565,21 +589,22 @@
         trash.style.display = 'none';
         gameState.hasToy = false;
         gameState.coins += 10;
-        log('Threw away the stinky rotten toy! +10 coins 🪙');
+        log('Threw away the rotten stinky toy! +10 coins 🪙');
         updateUI();
       }
     });
 
     window.addEventListener('pointerup', () => { draggingToy = false; });
 
-    // Autonomous Movement & Room Loop
+    // Movement & behavior ticks
     setInterval(() => {
-      if (gameState.age >= 1 && !isDragging) {
+      const bounds = room.getBoundingClientRect();
+      const maxW = bounds.width - gameState.size;
+      const maxH = bounds.height - gameState.size;
+
+      if (gameState.age >= 1 && !isDragging && maxW > 0 && maxH > 0) {
         gameState.posX += gameState.vx;
         gameState.posY += gameState.vy;
-
-        const maxW = 600 - gameState.size;
-        const maxH = 380 - gameState.size;
 
         if (gameState.posX <= 0 || gameState.posX >= maxW) {
           gameState.vx *= -1;
@@ -592,41 +617,41 @@
 
         applyOrbTransform();
 
-        // Check toy interaction in background
+        // Toy background play
         if (gameState.hasToy && !gameState.toyRotten) {
-          const toyX = parseFloat(toy.style.left || 0);
-          const toyY = parseFloat(toy.style.top || 0);
+          const toyX = toy.offsetLeft;
+          const toyY = toy.offsetTop;
           const distToToy = Math.hypot(gameState.posX - toyX, gameState.posY - toyY);
-          if (distToToy < 60 && Math.random() < 0.08) {
+          if (distToToy < 50 && Math.random() < 0.08) {
             gameState.coins += 15;
             triggerHappy();
-            log('Orb bounced around and played with its toy! +15 coins 🪙');
+            log('Orb played with its toy! +15 coins 🪙');
             updateUI();
           }
         }
       }
 
-      // Age 1 Toy Tantrum
+      // Age 1 Toy tantrums
       if (gameState.age === 1 && !gameState.hasToy) {
-        if (Math.random() < 0.05) {
+        if (Math.random() < 0.04) {
           gameState.toyJumps++;
-          gameState.vy = -4;
+          gameState.vy = -3;
           log(`Orb jumped demanding a toy! (${gameState.toyJumps}/10)`);
           if (gameState.toyJumps >= 10 && !gameState.rioting) {
             gameState.rioting = true;
             orb.classList.add('orb-rioting');
-            log('Orb is rioting! Its face flipped completely around 💀');
+            log('Orb is rioting! Face flipped backwards 💀');
           }
         }
       }
 
-      // Age 2+ Autonomous stash feeding
+      // Age 2+ Stash background intake
       if (gameState.age >= 2) {
         if (gameState.hunger < 50 && gameState.fruitPacks > 0) {
           gameState.fruitPacks--;
           gameState.hunger = Math.min(100, gameState.hunger + 30);
           gameState.fruitsEatenTotal++;
-          log('Orb grabbed a fruit from the background stash! 🍎');
+          log('Orb grabbed fruit from stash! 🍎');
           checkGrowth();
           updateUI();
         }
@@ -634,21 +659,21 @@
           gameState.waterPacks--;
           gameState.thirst = Math.min(100, gameState.thirst + 30);
           gameState.watersDrunkTotal++;
-          log('Orb drank water from the background stash! 💧');
+          log('Orb drank water from stash! 💧');
           checkGrowth();
           updateUI();
         }
       }
 
-      // Speech bubble logic for Age 3
+      // Age 3 Speech bubble
       if (gameState.age === 3) {
-        speech.style.left = (gameState.posX - 10) + 'px';
-        speech.style.top = (gameState.posY - 35) + 'px';
+        speech.style.left = (gameState.posX + gameState.size / 2) + 'px';
+        speech.style.top = (gameState.posY - 10) + 'px';
         if (gameState.hunger < 45) {
-          speech.innerText = 'hungry!! feed me 🥣';
+          speech.innerText = 'hungry!! 🥣';
           speech.style.display = 'block';
         } else if (gameState.thirst < 45) {
-          speech.innerText = 'thirsty!! want water 💧';
+          speech.innerText = 'thirsty!! 💧';
           speech.style.display = 'block';
         } else {
           speech.style.display = 'none';
@@ -659,7 +684,7 @@
 
     }, 30);
 
-    // Vitals decay & death check
+    // Vitals decay
     setInterval(() => {
       if (gameState.age === 4) return;
 
