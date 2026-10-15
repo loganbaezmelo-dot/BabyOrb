@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BabyOrb</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: #11141c;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    h1 {
+      font-size: 26px;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+    #top-bar {
+      display: flex;
+      gap: 20px;
+      background: #1e2433;
+      padding: 10px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    #room {
+      position: relative;
+      width: 600px;
+      height: 380px;
+      background: linear-gradient(180deg, #2b354f 0%, #1a1e2d 75%, #141722 100%);
+      border: 3px solid #3c4866;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    #speech-bubble {
+      position: absolute;
+      background: #fff;
+      color: #111;
+      padding: 6px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      pointer-events: none;
+      display: none;
+      white-space: nowrap;
+      z-index: 20;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    }
+    #speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px 6px 0;
+      border-style: solid;
+      border-color: #fff transparent;
+      display: block;
+      width: 0;
+    }
+    #orb {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffd166, #f77f00);
+      box-shadow: 0 0 20px rgba(247, 127, 0, 0.4);
+      cursor: grab;
+      touch-action: none;
+      transition: width 0.3s, height 0.3s;
+      z-index: 10;
+    }
+    #orb:active {
+      cursor: grabbing;
+    }
+    .face {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15%;
+      transition: transform 0.4s ease;
+    }
+    .eye {
+      background: #111;
+      border-radius: 50%;
+      width: 14%;
+      height: 14%;
+    }
+    .orb-rioting .face {
+      transform: rotateY(180deg);
+      opacity: 0;
+    }
+    #toy, #trash, #stash {
+      position: absolute;
+      display: none;
+      user-select: none;
+    }
+    #toy {
+      width: 50px;
+      height: 50px;
+      font-size: 36px;
+      text-align: center;
+      line-height: 50px;
+      cursor: grab;
+      z-index: 5;
+    }
+    #trash {
+      bottom: 12px;
+      right: 16px;
+      width: 60px;
+      height: 60px;
+      background: #2a3142;
+      border: 2px dashed #64748b;
+      border-radius: 12px;
+      font-size: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4;
+    }
+    #stash {
+      bottom: 10px;
+      left: 16px;
+      display: flex;
+      gap: 10px;
+      font-size: 14px;
+      background: rgba(0,0,0,0.4);
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+    #shop {
+      margin-top: 14px;
+      width: 600px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .btn {
+      background: #252e42;
+      border: 1px solid #3c4866;
+      color: #fff;
+      padding: 10px 6px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: 0.15s;
+    }
+    .btn:hover:not(:disabled) {
+      background: #34405c;
+      border-color: #ffd166;
+    }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    #logs {
+      margin-top: 10px;
+      width: 600px;
+      height: 48px;
+      background: #141824;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #94a3b8;
+      overflow-y: auto;
+      text-align: center;
+    }
+    .dead-screen, .win-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+      font-size: 24px;
+      gap: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>BabyOrb 💀</h1>
+
+  <div id="top-bar">
+    <div>🪙 Coins: <span id="coins-display">0</span></div>
+    <div>🎂 Age: <span id="age-display">0</span></div>
+    <div>🍼 Hunger: <span id="hunger-display">100</span>%</div>
+    <div>💧 Thirst: <span id="thirst-display">100</span>%</div>
+  </div>
+
+  <div id="room">
+    <div id="speech-bubble"></div>
+    <div id="orb">
+      <div class="face">
+        <div class="eye"></div>
+        <div class="eye"></div>
+      </div>
+    </div>
+    <div id="toy">🧸</div>
+    <div id="trash">🗑️</div>
+    <div id="stash">
+      <span>🍎 Fruits: <b id="fruit-count">0</b></span>
+      <span>💧 Water: <b id="water-count">0</b></span>
+    </div>
+
+    <div id="game-over" class="dead-screen" style="display:none;">
+      <div>💀 Your orb passed away...</div>
+      <button class="btn" onclick="location.reload()">Restart</button>
+    </div>
+
+    <div id="win-screen" class="win-screen" style="display:none;">
+      <div>🎓 Age 4 reached! Your orb is fully grown and independent!</div>
+      <p style="font-size: 15px; color: #94a3b8;">It takes care of itself now. You beat the game 😭</p>
+    </div>
+  </div>
+
+  <div id="shop">
+    <button class="btn" id="btn-milk" onclick="buyMilk()">🍼 Milk (50c)</button>
+    <button class="btn" id="btn-babyfood" onclick="buyBabyFood()">🥣 Baby Food (75c)</button>
+    <button class="btn" id="btn-toy" onclick="buyToy()" disabled>🧸 Toy (100c)</button>
+    <button class="btn" id="btn-fruit" onclick="buyFruit()" disabled>🍎 5x Fruit (75c)</button>
+    <button class="btn" id="btn-water" onclick="buyWater()" disabled>💧 5x Water (60c)</button>
+    <button class="btn" id="btn-feed-stash" onclick="feedFromStash()" disabled>🍽️ Feed Stash</button>
+  </div>
+
+  <div id="logs">Pet your orb by rubbing your cursor or finger over it to get coins!</div>
+
+  <script>
+    const gameState = {
+      coins: 0,
+      age: 0,
+      hunger: 100,
+      thirst: 100,
+      milksFed: 0,
+      foodsFed: 0,
+      happyCount: 0,
+      petCount: 0,
+      toyJumps: 0,
+      rioting: false,
+      hasToy: false,
+      toyRotten: false,
+      fruitPacks: 0,
+      waterPacks: 0,
+      fruitsEatenTotal: 0,
+      watersDrunkTotal: 0,
+      posX: 275,
+      posY: 165,
+      size: 50,
+      vx: 1.5,
+      vy: 1.2
+    };
+
+    const room = document.getElementById('room');
+    const orb = document.getElementById('orb');
+    const toy = document.getElementById('toy');
+    const trash = document.getElementById('trash');
+    const stash = document.getElementById('stash');
+    const speech = document.getElementById('speech-bubble');
+    const logBox = document.getElementById('logs');
+
+    function log(msg) {
+      logBox.innerText = msg;
+    }
+
+    function updateUI() {
+      document.getElementById('coins-display').innerText = gameState.coins;
+      document.getElementById('age-display').innerText = gameState.age;
+      document.getElementById('hunger-display').innerText = Math.round(gameState.hunger);
+      document.getElementById('thirst-display').innerText = Math.round(gameState.thirst);
+      document.getElementById('fruit-count').innerText = gameState.fruitPacks;
+      document.getElementById('water-count').innerText = gameState.waterPacks;
+
+      const btnMilk = document.getElementById('btn-milk');
+      const btnBabyFood = document.getElementById('btn-babyfood');
+      const btnToy = document.getElementById('btn-toy');
+      const btnFruit = document.getElementById('btn-fruit');
+      const btnWater = document.getElementById('btn-water');
+      const btnFeedStash = document.getElementById('btn-feed-stash');
+
+      if (gameState.age === 0) {
+        btnMilk.innerText = '🍼 Milk (50c)';
+        btnBabyFood.innerText = '🥣 Baby Food (75c)';
+        btnToy.disabled = true;
+        btnFruit.disabled = true;
+        btnWater.disabled = true;
+        btnFeedStash.disabled = true;
+      } else if (gameState.age === 1) {
+        btnToy.disabled = gameState.hasToy || gameState.coins < 100;
+        btnFruit.disabled = true;
+        btnWater.disabled = true;
+        btnFeedStash.disabled = true;
+      } else if (gameState.age >= 2) {
+        btnMilk.innerText = '🍼 Milk (30c)';
+        btnBabyFood.innerText = '🥣 Baby Food (50c)';
+        btnToy.disabled = true;
+        btnFruit.disabled = gameState.coins < 75;
+        btnWater.disabled = gameState.coins < 60;
+        btnFeedStash.disabled = (gameState.fruitPacks === 0 && gameState.waterPacks === 0);
+      }
+    }
+
+    function applyOrbTransform() {
+      orb.style.width = gameState.size + 'px';
+      orb.style.height = gameState.size + 'px';
+      orb.style.left = gameState.posX + 'px';
+      orb.style.top = gameState.posY + 'px';
+    }
+
+    applyOrbTransform();
+    updateUI();
+
+    // Petting / Rubbing
+    let lastPetX = 0;
+    let lastPetY = 0;
+    let petDistance = 0;
+
+    orb.addEventListener('pointermove', (e) => {
+      if (isDragging) return;
+      const dist = Math.hypot(e.clientX - lastPetX, e.clientY - lastPetY);
+      petDistance += dist;
+      lastPetX = e.clientX;
+      lastPetY = e.clientY;
+
+      if (petDistance > 60) {
+        petDistance = 0;
+        let gain = 5;
+        if (gameState.age === 1) gain = 3;
+        if (gameState.age >= 2) gain = 1;
+
+        gameState.coins += gain;
+        gameState.petCount++;
+
+        if (gameState.age === 1 && gameState.petCount >= 20) {
+          levelUpToAge2();
+        }
+
+        log(`Rubbed orb! +${gain} coins 🪙`);
+        updateUI();
+      }
+    });
+
+    // Swiping / Moving Drag Orb
+    let isDragging = false;
+    let dragStart = { x: 0, y: 0 };
+
+    orb.addEventListener('pointerdown', (e) => {
+      if (gameState.age < 1) return;
+      isDragging = true;
+      dragStart = { x: e.clientX, y: e.clientY };
+      orb.setPointerCapture(e.pointerId);
+    });
+
+    orb.addEventListener('pointerup', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      const moved = Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y);
+      if (moved > 40) {
+        let gain = gameState.age === 1 ? 10 : 5;
+        gameState.coins += gain;
+        log(`Picked up and tossed orb! +${gain} coins 🪙`);
+        updateUI();
+      }
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      const bounds = room.getBoundingClientRect();
+      let nx = e.clientX - bounds.left - gameState.size / 2;
+      let ny = e.clientY - bounds.top - gameState.size / 2;
+      nx = Math.max(0, Math.min(bounds.width - gameState.size, nx));
+      ny = Math.max(0, Math.min(bounds.height - gameState.size, ny));
+      gameState.posX = nx;
+      gameState.posY = ny;
+      applyOrbTransform();
+    });
+
+    // Shop functions
+    function buyMilk() {
+      const price = gameState.age >= 2 ? 30 : 50;
+      if (gameState.coins >= price) {
+        gameState.coins -= price;
+        gameState.thirst = Math.min(100, gameState.thirst + 40);
+        gameState.milksFed++;
+        triggerHappy();
+        log('Gave orb warm milk! 🍼');
+        checkGrowth();
+        updateUI();
+      }
+    }
+
+    function buyBabyFood() {
+      const price = gameState.age >= 2 ? 50 : 75;
+      if (gameState.coins >= price) {
+        gameState.coins -= price;
+        gameState.hunger = Math.min(100, gameState.hunger + 40);
+        gameState.foodsFed++;
+        triggerHappy();
+        log('Fed orb some baby food! 🥣');
+        checkGrowth();
+        updateUI();
+      }
+    }
+
+    function buyToy() {
+      if (gameState.coins >= 100 && !gameState.hasToy) {
+        gameState.coins -= 100;
+        gameState.hasToy = true;
+        gameState.rioting = false;
+        orb.classList.remove('orb-rioting');
+        toy.style.display = 'block';
+        toy.style.left = '450px';
+        toy.style.top = '250px';
+        log('Bought a toy! Orb stopped rioting and is thrilled! 🧸');
+        triggerHappy();
+        updateUI();
+      }
+    }
+
+    function buyFruit() {
+      if (gameState.coins >= 75) {
+        gameState.coins -= 75;
+        gameState.fruitPacks += 5;
+        log('Bought a 5-pack of fruits! 🍎');
+        updateUI();
+      }
+    }
+
+    function buyWater() {
+      if (gameState.coins >= 60) {
+        gameState.coins -= 60;
+        gameState.waterPacks += 5;
+        log('Bought a 5-pack of fresh water! 💧');
+        updateUI();
+      }
+    }
+
+    function feedFromStash() {
+      let fed = false;
+      if (gameState.fruitPacks > 0) {
+        gameState.fruitPacks--;
+        gameState.hunger = Math.min(100, gameState.hunger + 30);
+        gameState.fruitsEatenTotal++;
+        fed = true;
+      }
+      if (gameState.waterPacks > 0) {
+        gameState.waterPacks--;
+        gameState.thirst = Math.min(100, gameState.thirst + 30);
+        gameState.watersDrunkTotal++;
+        fed = true;
+      }
+      if (fed) {
+        triggerHappy();
+        log('Manually fed orb from your stashed supplies!');
+        checkGrowth();
+        updateUI();
+      }
+    }
+
+    function triggerHappy() {
+      if (gameState.age === 1) {
+        gameState.happyCount++;
+        if (gameState.happyCount >= 10) {
+          levelUpToAge2();
+        }
+      }
+    }
+
+    function checkGrowth() {
+      if (gameState.age === 0) {
+        if (gameState.milksFed >= 4 && gameState.foodsFed >= 8) {
+          levelUpToAge1();
+        }
+      } else if (gameState.age === 2) {
+        if (gameState.fruitsEatenTotal >= 15 && gameState.watersDrunkTotal >= 15) {
+          levelUpToAge3();
+        }
+      }
+    }
+
+    function levelUpToAge1() {
+      gameState.age = 1;
+      gameState.size = 80;
+      applyOrbTransform();
+      log('🎉 Orb reached Age 1! It started moving around and wants a toy!');
+      updateUI();
+    }
+
+    function levelUpToAge2() {
+      gameState.age = 2;
+      gameState.size = 110;
+      gameState.toyRotten = true;
+      toy.innerText = '🤢';
+      trash.style.display = 'flex';
+      stash.style.display = 'flex';
+      applyOrbTransform();
+      log('🎉 Orb reached Age 2! The toy got rotten and stinky! Throw it away in the trash!');
+      updateUI();
+    }
+
+    function levelUpToAge3() {
+      gameState.age = 3;
+      gameState.size = 140;
+      applyOrbTransform();
+      log('🎉 Orb reached Age 3! It learned how to talk!');
+      updateUI();
+
+      setTimeout(() => {
+        levelUpToAge4();
+      }, 35000);
+    }
+
+    function levelUpToAge4() {
+      gameState.age = 4;
+      gameState.size = 175;
+      applyOrbTransform();
+      document.getElementById('win-screen').style.display = 'flex';
+      updateUI();
+    }
+
+    // Toy drag to trash
+    let draggingToy = false;
+    toy.addEventListener('pointerdown', (e) => {
+      if (!gameState.toyRotten) return;
+      draggingToy = true;
+      toy.setPointerCapture(e.pointerId);
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!draggingToy) return;
+      const b = room.getBoundingClientRect();
+      toy.style.left = (e.clientX - b.left - 25) + 'px';
+      toy.style.top = (e.clientY - b.top - 25) + 'px';
+
+      const tRect = trash.getBoundingClientRect();
+      if (e.clientX >= tRect.left && e.clientX <= tRect.right &&
+          e.clientY >= tRect.top && e.clientY <= tRect.bottom) {
+        draggingToy = false;
+        toy.style.display = 'none';
+        trash.style.display = 'none';
+        gameState.hasToy = false;
+        gameState.coins += 10;
+        log('Threw away the stinky rotten toy! +10 coins 🪙');
+        updateUI();
+      }
+    });
+
+    window.addEventListener('pointerup', () => { draggingToy = false; });
+
+    // Autonomous Movement & Room Loop
+    setInterval(() => {
+      if (gameState.age >= 1 && !isDragging) {
+        gameState.posX += gameState.vx;
+        gameState.posY += gameState.vy;
+
+        const maxW = 600 - gameState.size;
+        const maxH = 380 - gameState.size;
+
+        if (gameState.posX <= 0 || gameState.posX >= maxW) {
+          gameState.vx *= -1;
+          gameState.posX = Math.max(0, Math.min(maxW, gameState.posX));
+        }
+        if (gameState.posY <= 0 || gameState.posY >= maxH) {
+          gameState.vy *= -1;
+          gameState.posY = Math.max(0, Math.min(maxH, gameState.posY));
+        }
+
+        applyOrbTransform();
+
+        // Check toy interaction in background
+        if (gameState.hasToy && !gameState.toyRotten) {
+          const toyX = parseFloat(toy.style.left || 0);
+          const toyY = parseFloat(toy.style.top || 0);
+          const distToToy = Math.hypot(gameState.posX - toyX, gameState.posY - toyY);
+          if (distToToy < 60 && Math.random() < 0.08) {
+            gameState.coins += 15;
+            triggerHappy();
+            log('Orb bounced around and played with its toy! +15 coins 🪙');
+            updateUI();
+          }
+        }
+      }
+
+      // Age 1 Toy Tantrum
+      if (gameState.age === 1 && !gameState.hasToy) {
+        if (Math.random() < 0.05) {
+          gameState.toyJumps++;
+          gameState.vy = -4;
+          log(`Orb jumped demanding a toy! (${gameState.toyJumps}/10)`);
+          if (gameState.toyJumps >= 10 && !gameState.rioting) {
+            gameState.rioting = true;
+            orb.classList.add('orb-rioting');
+            log('Orb is rioting! Its face flipped completely around 💀');
+          }
+        }
+      }
+
+      // Age 2+ Autonomous stash feeding
+      if (gameState.age >= 2) {
+        if (gameState.hunger < 50 && gameState.fruitPacks > 0) {
+          gameState.fruitPacks--;
+          gameState.hunger = Math.min(100, gameState.hunger + 30);
+          gameState.fruitsEatenTotal++;
+          log('Orb grabbed a fruit from the background stash! 🍎');
+          checkGrowth();
+          updateUI();
+        }
+        if (gameState.thirst < 50 && gameState.waterPacks > 0) {
+          gameState.waterPacks--;
+          gameState.thirst = Math.min(100, gameState.thirst + 30);
+          gameState.watersDrunkTotal++;
+          log('Orb drank water from the background stash! 💧');
+          checkGrowth();
+          updateUI();
+        }
+      }
+
+      // Speech bubble logic for Age 3
+      if (gameState.age === 3) {
+        speech.style.left = (gameState.posX - 10) + 'px';
+        speech.style.top = (gameState.posY - 35) + 'px';
+        if (gameState.hunger < 45) {
+          speech.innerText = 'hungry!! feed me 🥣';
+          speech.style.display = 'block';
+        } else if (gameState.thirst < 45) {
+          speech.innerText = 'thirsty!! want water 💧';
+          speech.style.display = 'block';
+        } else {
+          speech.style.display = 'none';
+        }
+      } else {
+        speech.style.display = 'none';
+      }
+
+    }, 30);
+
+    // Vitals decay & death check
+    setInterval(() => {
+      if (gameState.age === 4) return;
+
+      gameState.hunger -= 1.2;
+      gameState.thirst -= 1.5;
+
+      if (gameState.hunger <= 0 || gameState.thirst <= 0) {
+        document.getElementById('game-over').style.display = 'flex';
+      }
+      updateUI();
+    }, 1000);
+  </script>
+</body>
+</html>
